@@ -27,4 +27,3 @@ for tr in trs:
             'rank': rank_after
         }
         db.music_chart.insert_one(doc)
-        

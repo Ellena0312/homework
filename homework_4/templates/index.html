@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+    <title>스파르타코딩클럽 | 1주차 숙제</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poor+Story&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Poor Story', cursive;
+        }
+
+        .picture {
+            max-height: 400px;
+            overflow: hidden;
+        }
+
+        .picture img {
+            max-height: initial;
+            margin-top: -20%;
+        }
+
+        .wrap {
+            width: 700px;
+            margin: 10px auto;
+        }
+
+        .text {
+            font-size: 18px;
+        }
+
+        .button {
+            text-align: center;
+        }
+
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                type: "GET", // GET 방식으로 요청한다.
+                url: "https://api.manana.kr/exchange/rate.json",
+                data: {}, // 요청하면서 함께 줄 데이터 (GET 요청시엔 비워두세요)
+                success: function (response) { // 서버에서 준 결과를 response라는 변수에 담음
+                    $('#Rate').text(response[1]['rate'])
+                }
+            })
+            show_order_list();
+        });
+
+        function order() {
+            let name = $('#name').val()
+            let number = $('#number').val()
+            let phone_num = $('#phone_num').val()
+            let address = $('#address').val()
+
+            if (name === '') {
+                alert('이름을 입력해주세요')
+            } else if (number === '--수량을 선택하세요--') {
+                alert('수량을 입력해주세요')
+            } else if (phone_num === '') {
+                alert('전화번호를 입력해주세요')
+            } else if (address === '') {
+                alert('주소를 입력해주세요')
+            } else {
+                alert('주문이 완료되었습니다.')
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/order_list",
+                data: {
+                    "name_give": name,
+                    "number_give": number,
+                    "phone_num_give": phone_num,
+                    "address_give": address
+                },
+                success: function (response) {
+                    if (response["result"] == "success") {
+                        alert(response["msg"]);
+                        window.location.reload();
+                    }
+                }
+            })
+        }
+
+        function show_order_list() {
+            // 1. 리뷰 목록을 서버에 요청하기
+            // 2. 요청 성공 여부 확인하기
+            // 3. 요청 성공했을 때 리뷰를 올바르게 화면에 나타내기
+            $.ajax({
+                type: "GET",
+                url: "/order_list",
+                data: {},
+                success: function (response) {
+                    if (response["result"] == "success") {
+                        let rows = response["data"]
+                        for (let i = 0; i < rows.length; i++) {
+                            let row = rows[i]
+                            let name = row['name']
+                            let number = row['number']
+                            let phone_num = row['phone_num']
+                            let address = row['address']
+                            let temp = `<tr>
+                                            <td>${name}</td>
+                                            <td>${number}</td>
+                                            <td>${phone_num}</td>
+                                            <td>${address}</td>
+                                        </tr>`
+                            $('#list-box').append(temp)
+                        }
+                    } else {
+                        alert("주문 내역을 받아오지 못했습니다");
+                    }
+                }
+            })
+        }
+    </script>
+</head>
+
+<body>
+<div class="wrap">
+
+    <div class="picture">
+        <img src="https://cdnweb01.wikitree.co.kr/webdata/editor/202008/25/img_20200825093442_a49d31f7.webp"
+             style="width: 700px; height: 700px;"/>
+    </div>
+
+    <div>
+        <br>
+        <p><span style="font-size: 50px">인형 판매합니다.</span>
+            <span style="font-size: 15px">  (가격: 15,000원 /개)</span></p>
+        <p class="text"> 예쁜 인형들을 직접 만들어 판매합니다. <br>
+            5개까지 주문 가능합니다! <br>
+            자세한 내용은 아래 메일로 연락주세요! <br>
+            u_c_yurim0312@naver.com</p> <br>
+    </div>
+
+    <div><p> 달러-원 환율 : <span id="Rate"></span></p></div>
+
+    <div>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon1">이름</span>
+            </div>
+            <input type="text" class="form-control" id="name" placeholder="--이름을 입력해주세요--" aria-label="Username"
+                   aria-describedby="basic-addon1">
+        </div>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="number">수량</label>
+            </div>
+            <select class="custom-select" id="number">
+                <option selected>--수량을 선택하세요--</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+        </div>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon3">전화번호</span>
+            </div>
+            <input type="text" class="form-control" id="phone_num" aria-describedby="basic-addon3">
+        </div>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">주소</span>
+            </div>
+            <textarea class="form-control" id="address" aria-label="With textarea"></textarea>
+        </div>
+    </div>
+
+    <br>
+    <br>
+
+    <div class="button">
+        <button onclick="order()" type="button" class="btn btn-warning">주문하기</button>
+        <br>
+        <br>
+    </div>
+
+    <br>
+    <br>
+    <hr>
+    <br>
+    <br>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">이름</th>
+            <th scope="col">수량</th>
+            <th scope="col">주소</th>
+            <th scope="col">전화번호</th>
+        </tr>
+        </thead>
+        <tbody id="list-box">
+        </tbody>
+    </table>
+    <br>
+    <br>
+
+</div>
+</body>
+
+</html>
